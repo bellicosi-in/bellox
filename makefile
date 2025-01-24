@@ -8,6 +8,8 @@ SOURCES = main.c \
 					debug.c \
 					chunk.c \
 					vm.c \
+					compiler.c \
+					scanner.c \
 					
 
 HEADERS = common.h \
@@ -16,6 +18,8 @@ HEADERS = common.h \
 					chunk.h \
 					debug.h \
 					vm.h \
+					compiler.h \
+					scanner.h \
 
 
 OUTPUT = clox

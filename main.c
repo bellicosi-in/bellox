@@ -4,29 +4,66 @@
 #include "debug.h"
 #include "memory.h"
 #include "vm.h"
+#include "compiler.h"
+
+static char* readFile(const char* path){
+  FILE* file = fopen(path,"rb");
+  if(file == NULL){
+    fprintf(stderr, "could not open the file. [%s]", path);
+    exit(60);
+  }
+  fseek(file, 0L, SEEK_END);
+  size_t fileSize = ftell(file);
+  rewind(file);
+
+  char* buffer = (char*)malloc(fileSize + 1);
+  if(buffer==NULL){
+    fprintf(stderr, "could not allocate space [%s]", path);
+    exit(60);
+  }
+  size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+  if(bytesRead < fileSize){
+    fprintf(stderr, "could not read the entire file [%s]", path);
+    exit(60);
+  }
+  buffer[fileSize] = '\0';
+  fclose(file);
+  return buffer;
+}
+
+static void runFile(const char* path){
+  char* source = readFile(path);
+  InterpretResult result = interpret(source);
+  free(source);
+  if(result == INTERPRET_COMPILE_ERROR) exit(74);
+  if(result == INTERPRET_RUNTIME_ERROR) exit(75);
+
+}
+
+static void repl(){
+  char line[1024];
+  for(;;){
+    printf("> ");
+    if(!fgets(line, sizeof(line), stdin)){
+      printf("\n");
+      break;
+    }
+    interpret(line);
+  }
+}
 
 
 int main(int argc, char* argv[]){
   initVM();
-  Chunk chunk;
-  initChunk(&chunk);
-  int constant = addConstant(&chunk, 1.2);
-  writeChunk(&chunk, OP_CONSTANT, 123);
-  writeChunk(&chunk, constant, 123);
-  constant = addConstant(&chunk, 2.0);
-  writeChunk(&chunk, OP_CONSTANT, 123);
-  writeChunk(&chunk, constant, 123);
-  writeChunk(&chunk, OP_ADD, 124);
-  constant = addConstant(&chunk, 1.6);
-  writeChunk(&chunk, OP_CONSTANT, 124);
-  writeChunk(&chunk, constant, 124);
-  writeChunk(&chunk, OP_DIVIDE, 124);
-  writeChunk(&chunk, OP_NEGATE, 125);
-  writeChunk(&chunk, OP_RETURN, 125);
-  disassembleChunk(&chunk, "Test chunk");
-  interpret(&chunk);
+  
+  if(argc == 1){
+    repl();
+  }else if(argc == 2){
+    runFile(argv[1]);
+  }else{
+    fprintf(stderr, "USAGE PATH [CLOX] \n");
+  }
   freeVM();
-  freeChunk(&chunk);
   
 
   return 0;
