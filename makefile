@@ -10,6 +10,7 @@ SOURCES = main.c \
 					vm.c \
 					compiler.c \
 					scanner.c \
+					object.c \
 					
 
 HEADERS = common.h \
@@ -20,6 +21,7 @@ HEADERS = common.h \
 					vm.h \
 					compiler.h \
 					scanner.h \
+					object.h \
 
 
 OUTPUT = clox
