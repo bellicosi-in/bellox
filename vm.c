@@ -111,7 +111,7 @@ InterpretResult run(){
       case OP_SUBTRACT: BINARY_OP(NUMBER_VAL,-); break;
       case OP_MULTIPLY: BINARY_OP(NUMBER_VAL,*); break;
       case OP_DIVIDE: BINARY_OP(NUMBER_VAL,/); break;
-      case OP_NOT: push(BOOL_VAL(isFalsey(pop())));
+      case OP_NOT: push(BOOL_VAL(isFalsey(pop()))); break;
       case OP_RETURN:
         printValue(pop());
         printf("\n");
