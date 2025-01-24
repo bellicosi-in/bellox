@@ -23,6 +23,7 @@ struct ObjString{
   Obj obj;
   char* chars;
   int length;
+  uint32_t hash;
 };
 
 ObjString* copyString(const char* chars, int length);

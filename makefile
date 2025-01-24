@@ -11,6 +11,7 @@ SOURCES = main.c \
 					compiler.c \
 					scanner.c \
 					object.c \
+					table.c \
 					
 
 HEADERS = common.h \
@@ -22,6 +23,7 @@ HEADERS = common.h \
 					compiler.h \
 					scanner.h \
 					object.h \
+					table.h \
 
 
 OUTPUT = clox
