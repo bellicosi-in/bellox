@@ -3,3 +3,7 @@ var beverage = "cafe au lait";
 breakfast = "beignets with " + beverage;
 
 print breakfast;
+
+for(var i = 0; i<= 3; i = i+1){
+  print "run";
+}
