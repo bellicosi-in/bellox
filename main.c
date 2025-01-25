@@ -1,10 +1,7 @@
 #include "common.h"
 #include "chunk.h"
-#include "value.h"
 #include "debug.h"
-#include "memory.h"
 #include "vm.h"
-#include "compiler.h"
 
 static char* readFile(const char* path){
   FILE* file = fopen(path,"rb");
