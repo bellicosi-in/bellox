@@ -645,7 +645,7 @@ enum Precedence {
 ```
 
 
-PART 1: FUNDAMENTAL PARSING THEORY
+# PART 1: FUNDAMENTAL PARSING THEORY
 
 1. Grammar Theory and Language Classification
 
@@ -815,7 +815,7 @@ impl<'a> Parser<'a> {
 ```
 
 
-PARSING CHALLENGES IN DIFFERENT LANGUAGES
+# PARSING CHALLENGES IN DIFFERENT LANGUAGES
 
 1. JavaScript's Automatic Semicolon Insertion (ASI)
 This is one of the most interesting parsing challenges. JavaScript's parser needs to decide when to automatically insert semicolons. Consider this code:
@@ -864,7 +864,7 @@ class Parser:
                 yield DEDENT
 ```
 
-ADVANCED PARSING TECHNIQUES
+# ADVANCED PARSING TECHNIQUES
 
 1. Generalized LR (GLR) Parsing
 GLR parsing can handle ambiguous grammars by exploring multiple parsing paths simultaneously. Here's a conceptual implementation:
@@ -912,7 +912,7 @@ fn parse_expression<'a>(&mut self, input: &'a str) -> Result<(Expr, &'a str)> {
 }
 ```
 
-INTERACTION WITH OPTIMIZATION PHASES
+# INTERACTION WITH OPTIMIZATION PHASES
 
 The parser's output significantly affects optimization opportunities. Let's explore this relationship:
 
@@ -998,6 +998,204 @@ class FunctionParser {
         }
         
         return func;
+    }
+};
+```
+
+
+
+# LOCAL OPTIMIZATIONS
+
+These optimizations work within a single basic block of code.
+
+1. Constant Folding
+This is one of the most fundamental optimizations. Here's how modern compilers implement it:
+
+```cpp
+class ConstantFolder {
+    Value* fold(Expression* expr) {
+        if (expr->isConstant()) {
+            return expr->evaluate();
+        }
+        
+        if (isBinaryOp(expr)) {
+            Value* left = fold(expr->left);
+            Value* right = fold(expr->right);
+            
+            if (left->isConstant() && right->isConstant()) {
+                switch (expr->operator_type) {
+                    case ADD:
+                        return new ConstantValue(left->value + right->value);
+                    case MULTIPLY:
+                        return new ConstantValue(left->value * right->value);
+                    // ... other operators
+                }
+            }
+        }
+        return expr;
+    }
+};
+```
+
+2. Strength Reduction
+This replaces expensive operations with cheaper ones. Modern compilers like LLVM implement this like:
+
+```cpp
+class StrengthReducer {
+    Expression* reduce(Expression* expr) {
+        if (expr->type == MULTIPLY) {
+            if (isPowerOfTwo(expr->right)) {
+                // Convert multiplication by 2^n to left shift by n
+                int shift = log2(expr->right->value);
+                return new ShiftExpression(expr->left, shift);
+            }
+        }
+        
+        if (expr->type == DIVIDE) {
+            if (isPowerOfTwo(expr->right)) {
+                // Convert division by 2^n to right shift by n
+                int shift = log2(expr->right->value);
+                return new ShiftExpression(expr->left, -shift);
+            }
+        }
+        return expr;
+    }
+};
+```
+
+LOOP OPTIMIZATIONS
+
+These are more complex because they deal with program flow. Let's look at how modern compilers implement them.
+
+1. Loop Invariant Code Motion (LICM)
+LLVM implements this optimization to move code that doesn't change in a loop outside of it:
+
+```cpp
+class LoopInvariantMotion {
+    void optimize(Loop* loop) {
+        // Find all expressions in the loop
+        for (Instruction* inst : loop->instructions()) {
+            if (isInvariant(inst, loop)) {
+                // Move to loop preheader
+                moveToPreheader(inst, loop);
+            }
+        }
+    }
+    
+    bool isInvariant(Instruction* inst, Loop* loop) {
+        // An instruction is invariant if all its operands are
+        // either defined outside the loop or are themselves invariant
+        for (Value* operand : inst->operands()) {
+            if (loop->contains(operand) && !isInvariant(operand, loop)) {
+                return false;
+            }
+        }
+        return !inst->hasMemoryEffects();
+    }
+};
+```
+
+2. Loop Unrolling
+This optimization duplicates loop bodies to reduce branch overhead:
+
+```cpp
+class LoopUnroller {
+    void unroll(Loop* loop, int factor) {
+        if (!isUnrollCandidate(loop)) return;
+        
+        BasicBlock* body = loop->getBody();
+        BasicBlock* header = loop->getHeader();
+        
+        // Create unrolled copies
+        for (int i = 0; i < factor-1; i++) {
+            BasicBlock* copy = cloneBasicBlock(body);
+            // Update phi nodes and branch targets
+            updatePhiNodes(copy, i);
+            linkBlocks(header, copy);
+        }
+        
+        // Adjust trip count
+        updateTripCount(loop, factor);
+    }
+    
+    bool isUnrollCandidate(Loop* loop) {
+        // Check if loop has a known trip count
+        // and contains no complex control flow
+        return loop->getTripCount() && 
+               !loop->hasComplexFlow();
+    }
+};
+```
+
+DATAFLOW OPTIMIZATIONS
+
+These optimizations analyze how data moves through the program.
+
+1. Common Subexpression Elimination (CSE)
+Modern compilers implement this to avoid redundant calculations:
+
+```cpp
+class CSEOptimizer {
+    void optimize(Function* func) {
+        // Map expressions to their computed values
+        HashMap<Expression*, Value*> computedValues;
+        
+        for (BasicBlock* block : func->blocks()) {
+            for (Instruction* inst : block->instructions()) {
+                Expression* expr = inst->asExpression();
+                if (expr) {
+                    if (Value* existing = computedValues[expr]) {
+                        // Replace this computation with the existing value
+                        inst->replaceAllUsesWith(existing);
+                        inst->eraseFromParent();
+                    } else {
+                        computedValues[expr] = inst;
+                    }
+                }
+            }
+        }
+    }
+};
+```
+
+2. Dead Code Elimination (DCE)
+This removes code that doesn't affect the program's output:
+
+```cpp
+class DeadCodeEliminator {
+    void eliminate(Function* func) {
+        // Mark all instructions as potentially dead
+        Set<Instruction*> worklist;
+        for (Instruction* inst : func->instructions()) {
+            if (!inst->mayHaveSideEffects()) {
+                worklist.insert(inst);
+            }
+        }
+        
+        // Keep instructions that affect output
+        while (!worklist.empty()) {
+            Instruction* inst = worklist.pop();
+            if (isLive(inst)) {
+                // Mark all operands as needed
+                for (Value* operand : inst->operands()) {
+                    if (Instruction* def = operand->definingInstruction()) {
+                        worklist.insert(def);
+                    }
+                }
+            } else {
+                inst->eraseFromParent();
+            }
+        }
+    }
+    
+    bool isLive(Instruction* inst) {
+        // An instruction is live if it:
+        // 1. Has side effects
+        // 2. Computes a value used by other live instructions
+        // 3. Affects control flow
+        return inst->hasMemoryEffects() ||
+               inst->hasUsers() ||
+               inst->isTerminator();
     }
 };
 ```
