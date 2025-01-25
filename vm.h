@@ -12,7 +12,7 @@
 
 //represents a single ongoing function call
 typedef struct{
-  ObjFunction* function; //function of the callframe
+  ObjClosure* closure; //closure->function of the callframe
   uint8_t* ip; //base pointer where the caller will return
   Value* slots; //stack access
 }CallFrame;
@@ -25,6 +25,7 @@ typedef struct{
   Obj* objects;
   Table globals;
   Table strings;
+  ObjUpvalue* openUpvalues;
 }VM;
 
 typedef enum{
