@@ -7,11 +7,19 @@
 #include "debug.h"
 #include "table.h"
 
-#define STACK_MAX 256
+#define FRAMES_MAX 64
+#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+
+//represents a single ongoing function call
+typedef struct{
+  ObjFunction* function; //function of the callframe
+  uint8_t* ip; //base pointer where the caller will return
+  Value* slots; //stack access
+}CallFrame;
 
 typedef struct{
-  uint8_t* ip;
-  Chunk* chunk;
+  CallFrame frames[FRAMES_MAX];
+  int frameCount;
   Value stack[STACK_MAX];
   Value* stackTop;
   Obj* objects;
