@@ -1,19 +1,15 @@
-var breakfast = "beignets";
-var beverage = "cafe au lait";
-breakfast = "beignets with " + beverage;
+class CoffeeMaker {
+  init(coffee) {
+    this.coffee = coffee;
+  }
 
-print breakfast;
+  brew() {
+    print "Enjoy your cup of " + this.coffee;
 
-var x = 3;
-
-while(x<=5){
-  print "run";
-  x = x+1;
+    // No reusing the grounds!
+    this.coffee = nil;
+  }
 }
 
-fun run(a,b){
-  return a + b;
-}
-
-x = run(3,5);
-print x;
+var maker = CoffeeMaker("coffee and chicory");
+maker.brew();

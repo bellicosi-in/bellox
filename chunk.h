@@ -15,6 +15,7 @@ typedef enum{
   OP_TRUE,
   OP_FALSE,
   OP_CLOSURE,
+  OP_INVOKE,
   OP_CALL,
   OP_DEFINE_GLOBAL,
   OP_GET_GLOBAL,
@@ -37,6 +38,7 @@ typedef enum{
   OP_LOOP,
   OP_RETURN,
   OP_CLASS,
+  OP_METHOD,
 
 }OpCode;
 
