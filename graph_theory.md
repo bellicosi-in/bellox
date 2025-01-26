@@ -45,7 +45,7 @@ Syntactic Analysis is about ensuring the code follows the language's grammar rul
   - PEG - PARSING EXPRESSION GRAMMAR (PYTHON)
   - AST - (USED IN RUST)
 
-![Alt text](/photos/LL_LR)
+![Alt text](photos/LL_LR.png)
 
 
 
