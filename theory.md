@@ -1789,3 +1789,110 @@ Memory Trade-offs:
    - More complex implementation
    - Better memory utilization
 
+
+## BOTTOM UP PARSER
+
+A bottom-up parser is called "bottom-up" because it starts by recognizing the smallest terminal symbols (like numbers and operators) and gradually builds larger expressions from them, working its way up to the complete parse tree.
+
+Example with "3 + 4 * 5":
+
+1. First recognizes terminal symbols (bottom):
+```
+3 -> Number(3)
+4 -> Number(4)
+5 -> Number(5)
+```
+
+2. Then builds larger expressions (moving up):
+```
+4 * 5 -> Binary(Number(4), *, Number(5))
+```
+
+3. Finally reaches complete expression (top):
+```
+3 + (4 * 5) -> Binary(Number(3), +, Binary(Number(4), *, Number(5)))
+```
+
+This contrasts with top-down parsing (like in Clox), which starts with the largest grammar rule (expression) and breaks it down into smaller parts.
+
+
+## CONSTANT FOLDING OPTIMIZATION TECHNIQUE
+
+Constant folding is a compiler optimization that evaluates constant expressions at compile time rather than runtime. Here's an example:
+
+```c
+// Original code
+int x = 3 + 4 * 2;
+
+// Without constant folding
+OP_CONSTANT 3
+OP_CONSTANT 4
+OP_CONSTANT 2
+OP_MULTIPLY    // 4 * 2 at runtime
+OP_ADD         // 3 + 8 at runtime
+
+// With constant folding
+OP_CONSTANT 11  // Computed at compile time
+```
+
+More complex example:
+```c
+// Original
+const int a = 5;
+const int b = 10;
+int result = a * b + (30/2) - 4;
+
+// Without folding
+OP_CONSTANT 5
+OP_CONSTANT 10
+OP_MULTIPLY
+OP_CONSTANT 30
+OP_CONSTANT 2
+OP_DIVIDE
+OP_ADD
+OP_CONSTANT 4
+OP_SUBTRACT
+
+// With folding
+OP_CONSTANT 61  // (5 * 10) + (30/2) - 4 = 50 + 15 - 4 = 61
+```
+
+Constant folding is especially valuable in loops where computations would otherwise be repeated unnecessarily.
+
+Clox doesn't actually implement constant folding as an optimization. When it sees constants being operated on, it evaluates them at runtime rather than compile time.
+
+For example, for the expression `3 + 4`, Clox generates:
+```c
+OP_CONSTANT 3    // Push 3
+OP_CONSTANT 4    // Push 4  
+OP_ADD           // Add them at runtime
+```
+
+To implement constant folding in Clox, you'd modify the compiler to detect constant expressions during parsing:
+
+```c
+static void binary(bool canAssign) {
+  TokenType operatorType = parser.previous.type;
+  ParseRule* rule = getRule(operatorType);
+  
+  // If both operands are constants, fold them
+  if (isConstant(compiler->previous) && isConstant(compiler->current)) {
+    Value a = getConstantValue(compiler->previous);
+    Value b = getConstantValue(compiler->current);
+    Value result;
+    
+    switch(operatorType) {
+      case TOKEN_PLUS:
+        result = NUMBER_VAL(AS_NUMBER(a) + AS_NUMBER(b));
+        break;
+      // Other operators...
+    }
+    
+    emitConstant(result); // Emit single folded constant
+  } else {
+    // Normal binary operation compilation
+    parsePrecedence((Precedence)(rule->precedence + 1));
+    emitByte(makeOpCode(operatorType));
+  }
+}
+```
